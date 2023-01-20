@@ -1,106 +1,75 @@
 package jenb.leiterlispiel.main;
 
 import java.util.Queue;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import jenb.leiterlispiel.Objekte.SchlangeLeiter;
-import jenb.leiterlispiel.Objekte.SpielZug;
 import jenb.leiterlispiel.Objekte.Spieler;
-//import jenb.leiterlispiel.Objekte.Wuerfel;
-import jenb.leiterlispiel.ansicht.SpielBrett;
-import jenb.leiterlispiel.control.Controler;
+import jenb.leiterlispiel.Objekte.Wuerfel;
 
+//Spiellogik/Ablauf
 public class Spiel {
-	private final int WINPOINT = 100;
-	private SpielZug spielZug = new SpielZug();
-	private boolean jemandHatGewonnen = false;
-	private Queue<Spieler> spielerWarteschlange = new ConcurrentLinkedQueue<>();
-	//private Wuerfel wuerfel = new Wuerfel();
+	public boolean sechsGewuerfelt = false;
+	public boolean jemandHatGewonnen = false;
+	public final int WINPOINT = 100;
+	public Queue<Spieler> spielerWarteschlange = new ConcurrentLinkedQueue<>();
+	private Wuerfel wuerfel = new Wuerfel();
 	private SchlangeLeiter schlangeLeiter = new SchlangeLeiter();
-	private SpielBrett spielBrett = new SpielBrett();
-	private Scanner s = new Scanner(System.in);
-	private Controler controler = new Controler();
+	public int punkte = 0;
 
-	public Spiel() {
-		//System.out.println("Willkommen zum Leiterlispiel");
-		//spielerErstellen();
-		while (jemandHatGewonnen == false) {
-			spielen(spielerWarteschlange.poll());
-		}
-		s.close();
+
+	public Spieler getNextSpieler() {
+		return spielerWarteschlange.peek();
+	}
+		
+	public void addPlayer(String name) {
+		spielerWarteschlange.add(new Spieler(name));
 	}
 
-/*	private void spielerErstellen() {
-		int i = 1;
-		String name = "";
-		while (true){
-			System.out.println("Bitte gebt den Namen " + i++ + ". Spielers ein. Nichts eingeben und Enter drücken, wenn alle Spieler erfassr sind. ");
-			name = s.nextLine();
-			
-			if (name.equals("")) {						
-				break;
-			}else {
-				spielerWarteschlange.add(new Spieler(name));
-			}
-		}
-	}*/
-
-	private void spielen(Spieler spieler) {
-		System.out.println(spielBrett.getSpielerWarteschlange(spieler.getName()) + " du bist an der Reihe. Drücke Enter um zu Würfeln.");
-		s.nextLine();
+	public void spielen() {
+		Spieler spieler = spielerWarteschlange.peek();
+		int wurf = wuerfel.wuerfeln();
 		
-		int wurf = controler.getGewuerfelteZahl();
-		int punkte = wurf;
-		if (wurf == 6) {
-			spieler.setAnzahlSechserGewuerfelt(spieler.getAnzahlSechserGewuerfelt()+1);
-			System.out.println("Du hast ein 6er gewürfelt. Würfle nochmals.");
-			s.nextLine();
-			spielBrett.wuerfelButton.onActionProperty();
-			//controler.setGewuerfelteZahl(wuerfel.wuerfeln());
-			wurf = controler.getGewuerfelteZahl();
+		if (sechsGewuerfelt) {
 			punkte = punkte + wurf;
-			if (wurf == 6) {
-				spieler.setAnzahlSechserGewuerfelt(spieler.getAnzahlSechserGewuerfelt()+1);
-				System.out.println("Du hast einen weiteren 6er gewürfelt. Würfle nochmals.");
-				s.nextLine();
-				spielBrett.wuerfelButton.onActionProperty();
-				//controler.setGewuerfelteZahl(wuerfel.wuerfeln());
-				wurf = controler.getGewuerfelteZahl();
-				punkte = punkte + wurf;
-				if (wurf == 6) {
-					spieler.setAnzahlSechserGewuerfelt(spieler.getAnzahlSechserGewuerfelt()+1);
-					if (spieler.getAnzahlSechserGewuerfelt() == 3) {
-						System.out.println("3x ein 6er hinter einander gewürfelt. Pech gehabt!");
-						spieler.setAnzahlSechserGewuerfelt(0);
-						spielerWarteschlange.add(spieler);
-					} else {
-						spieler.setAnzahlSechserGewuerfelt(0);
-						spielZug.ziehen(spieler, wurf, punkte);
-						spieler.setSpielerPosition(schlangeLeiter.pruefen(spieler.getSpielerPosition()));
-					}
-				}else {
-					spieler.setAnzahlSechserGewuerfelt(0);
-					spielZug.ziehen(spieler, wurf, punkte);
-					spieler.setSpielerPosition(schlangeLeiter.pruefen(spieler.getSpielerPosition()));
-				}
-			}else {
+		} else {
+			punkte = wurf;
+		}
+		
+		if (wurf == 6) {
+			sechsGewuerfelt = true;
+			spieler.setAnzahlSechserGewuerfelt(spieler.getAnzahlSechserGewuerfelt()+1);
+			
+			if (spieler.getAnzahlSechserGewuerfelt() == 3) {
+				System.out.println("3x ein 6er hinter einander gewürfelt. Pech gehabt!");
 				spieler.setAnzahlSechserGewuerfelt(0);
-				spielZug.ziehen(spieler, wurf, punkte);
-				spieler.setSpielerPosition(schlangeLeiter.pruefen(spieler.getSpielerPosition()));
-			}
+				spielerWarteschlange.add(spielerWarteschlange.poll());
+				punkte = 0;
+			} 
+			
 		}else {
+			sechsGewuerfelt = false;
+			
 			spieler.setAnzahlSechserGewuerfelt(0);
-			spielZug.ziehen(spieler, wurf, punkte);
+			ziehen(spieler, wurf, punkte);
 			spieler.setSpielerPosition(schlangeLeiter.pruefen(spieler.getSpielerPosition()));
+			spielerWarteschlange.add(spielerWarteschlange.poll());
 		}
 
 		if (spieler.getSpielerPosition() >= WINPOINT) {
 			jemandHatGewonnen = true;
 			System.out.println(spieler.getName() + " Du hast Gewonnen!!");
-		} else {
-			spielerWarteschlange.add(spieler);
+		} 
+		//System.out.println(spieler.getName() + ": " + spieler.getSpielerPosition());
+	}
+	
+	public void ziehen(Spieler spieler, int wurf, int punkte) {
+		if (punkte > 6) {
+			//System.out.println("Du hast eine " + punkte + " gewürfelt.");
+			spieler.setSpielerPosition(spieler.getSpielerPosition()+ punkte);
+		}else {
+			//System.out.println("Du hast eine " + wurf + " gewürfelt.");
+			spieler.setSpielerPosition(spieler.getSpielerPosition()+ wurf);
 		}
-		System.out.println(spieler.getName() + ": " + spieler.getSpielerPosition());
 	}
 }

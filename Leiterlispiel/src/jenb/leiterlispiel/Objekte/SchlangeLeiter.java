@@ -2,6 +2,7 @@ package jenb.leiterlispiel.Objekte;
 import java.util.HashMap;
 import java.util.Map;
 
+//Schlagen und Leiter Definition
 public class SchlangeLeiter {
 	private Map<Integer, Integer> schlange = new HashMap<>();
 	private Map<Integer, Integer> leiter = new HashMap<>();
@@ -27,11 +28,13 @@ public class SchlangeLeiter {
 	public int pruefen(int spielerPosition) {
 		Integer ziel = schlange.get(spielerPosition);
 		if (ziel != null){
+			//System.out.println() ist gewollt eingestellt, da auf der Oberfläche nicht immer gut ersichtlich.
 			System.out.println("Du wurdest von einer Schlange gebissen.");
 			return ziel;
 		}
 		ziel = leiter.get(spielerPosition);
 		if (ziel != null) {
+			//System.out.println() ist gewollt eingestellt, da auf der Oberfläche nicht immer gut ersichtlich.
 			System.out.println("Du kletterst eine Leiter hoch.");
 			return ziel;
 		}

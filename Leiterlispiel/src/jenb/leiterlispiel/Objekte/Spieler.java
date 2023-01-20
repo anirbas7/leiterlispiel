@@ -1,7 +1,7 @@
 package jenb.leiterlispiel.Objekte;
-
+//definiert die Klasse spieler
 public class Spieler {
-	private int spielerPosition = 0;
+	private int spielerPosition = 1;
 	private final String name;
 	private int anzahlSechserGewuerfelt = 0;
 	
